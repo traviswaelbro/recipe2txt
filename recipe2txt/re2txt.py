@@ -21,11 +21,11 @@ import os
 import sys
 from logging import DEBUG
 
-from recipe2txt.fetcher import Cache
-from recipe2txt.html2recipe import update_counts
-from recipe2txt.parsing_error import write_errors
-from recipe2txt.recipes2out import RecipeWriter
-from recipe2txt.user_interface import (
+from fetcher import Cache
+from html2recipe import update_counts
+from parsing_error import write_errors
+from recipes2out import RecipeWriter
+from user_interface import (
     get_parser,
     init_database,
     init_logging,
@@ -33,14 +33,14 @@ from recipe2txt.user_interface import (
     sancheck_args,
     strings2urls,
 )
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.filesystem import ensure_accessible_file_critical
-from recipe2txt.utils.misc import Counts, dict2str
+from utils.ContextLogger import get_logger
+from utils.filesystem import ensure_accessible_file_critical
+from utils.misc import Counts, dict2str
 
 try:
-    from recipe2txt.fetcher_async import AsyncFetcher as Fetcher
+    from fetcher_async import AsyncFetcher as Fetcher
 except ImportError:
-    from recipe2txt.fetcher import (  # type: ignore[assignment] # isort: skip
+    from fetcher import (  # type: ignore[assignment] # isort: skip
         Fetcher as Fetcher,
     )
 
@@ -57,9 +57,7 @@ def main() -> None:
     mutex_args(a)
     init_logging(a.debug, a.verbosity)
     if logger.isEnabledFor(logging.DEBUG):
-        logger.debug(
-            "CLI-ARGS: %s\t%s", os.linesep, dict2str(vars(a), os.linesep + "\t")
-        )
+        logger.debug("CLI-ARGS: %s\t%s", os.linesep, dict2str(vars(a), os.linesep + "\t"))
 
     logger.info("--- Processing arguments ---")
     sancheck_args(a)

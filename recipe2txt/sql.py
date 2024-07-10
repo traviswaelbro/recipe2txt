@@ -31,17 +31,16 @@ import sqlite3
 import textwrap
 from typing import Any, Final, Tuple
 
-from recipe2txt.utils.conditional_imports import LiteralString
-from recipe2txt.utils.ContextLogger import get_logger
-
-from .html2recipe import METHODS, NA, RECIPE_ATTRIBUTES, SCRAPER_VERSION, Recipe
-from .html2recipe import RecipeStatus as RS
-from .html2recipe import gen_status, int2status, none2na
-from .utils.filesystem import AccessibleDatabase, File
-from .utils.misc import URL, head_str, obj2sql_str
+from html2recipe import METHODS, NA, RECIPE_ATTRIBUTES, SCRAPER_VERSION, Recipe
+from html2recipe import RecipeStatus as RS
+from html2recipe import gen_status, int2status, none2na
+from utils.conditional_imports import LiteralString
+from utils.ContextLogger import get_logger
+from utils.filesystem import AccessibleDatabase, File
+from utils.misc import URL, head_str, obj2sql_str
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 
@@ -72,9 +71,9 @@ _CREATE_TABLES: Final = textwrap.dedent(
         CREATE TABLE IF NOT EXISTS contents(
             fileID	 INTEGER NOT NULL,
             recipeID INTEGER NOT NULL,
-            FOREIGN KEY(fileID) REFERENCES files(fileID) ON UPDATE CASCADE ON DELETE 
+            FOREIGN KEY(fileID) REFERENCES files(fileID) ON UPDATE CASCADE ON DELETE
             CASCADE,
-            FOREIGN KEY(recipeID) REFERENCES recipes(recipeID) ON UPDATE CASCADE ON 
+            FOREIGN KEY(recipeID) REFERENCES recipes(recipeID) ON UPDATE CASCADE ON
             DELETE CASCADE
             UNIQUE(fileID, recipeID) ON CONFLICT IGNORE
         ) STRICT;
@@ -115,14 +114,9 @@ _ASSOCIATE_FILE_RECIPE: Final = (
 )
 
 _FILEPATHS_JOIN_RECIPES: Final = (
-    " ((SELECT * FROM files WHERE filepath = ?) "
-    " NATURAL JOIN contents NATURAL JOIN recipes) "
+    " ((SELECT * FROM files WHERE filepath = ?) " " NATURAL JOIN contents NATURAL JOIN recipes) "
 )
-_GET_RECIPE: Final = (
-    "SELECT "  # nosec B608
-    + obj2sql_str(*RECIPE_ATTRIBUTES)
-    + " FROM recipes WHERE url = ?"
-)
+_GET_RECIPE: Final = "SELECT " + obj2sql_str(*RECIPE_ATTRIBUTES) + " FROM recipes WHERE url = ?"  # nosec B608
 _GET_RECIPES: Final = (
     "SELECT "  # nosec B608
     + obj2sql_str(*RECIPE_ATTRIBUTES)
@@ -141,10 +135,7 @@ _GET_TITLES_HOSTS: Final = (
     + obj2sql_str(RS.INCOMPLETE_ON_DISPLAY)
 )
 
-_DROP_ALL: Final = (
-    "DROP TABLE IF EXISTS recipes; DROP TABLE IF EXISTS files; "
-    "DROP TABLE IF EXISTS contents"
-)
+_DROP_ALL: Final = "DROP TABLE IF EXISTS recipes; DROP TABLE IF EXISTS files; " "DROP TABLE IF EXISTS contents"
 
 
 def fetch_again(status: RS, scraper_version: str) -> bool:
@@ -305,8 +296,7 @@ class Database:
             if url in wanted and not fetch_again(status, version):
                 if status == RS.UNKNOWN:
                     logger.info(
-                        "Not refetching %s, scraper-version (%s) since last fetch has"
-                        " not changed.",
+                        "Not refetching %s, scraper-version (%s) since last fetch has" " not changed.",
                         url,
                         version,
                     )
@@ -366,9 +356,7 @@ class Database:
             return recipe
 
         for old_val, new_val in zip(old_row, new_row):
-            if (new_val and new_val != NA) and (
-                prefer_new or not (old_val and old_val != NA)
-            ):
+            if (new_val and new_val != NA) and (prefer_new or not (old_val and old_val != NA)):
                 merged_row.append(new_val)
                 updated.append(True)
             else:
@@ -378,20 +366,13 @@ class Database:
         merged_row[-1] = SCRAPER_VERSION
 
         if True in updated:
-            if (
-                not old_row[-2] <= RS.UNKNOWN
-                and new_row[-2] < RS.UNKNOWN  # type: ignore[operator]
-            ):
-                merged_row[-2] = gen_status(
-                    merged_row[: len(METHODS)]  # type: ignore[arg-type]
-                )
+            if not old_row[-2] <= RS.UNKNOWN and new_row[-2] < RS.UNKNOWN:  # type: ignore[operator]
+                merged_row[-2] = gen_status(merged_row[: len(METHODS)])  # type: ignore[arg-type]
             else:
                 merged_row[-2] = max(old_row[-2], new_row[-2])
             r = Recipe(*merged_row)  # type: ignore[arg-type]
             if logger.isEnabledFor(logging.INFO):
-                for attr, old_val, new_val, is_replaced in zip(
-                    RECIPE_ATTRIBUTES, old_row, new_row, updated
-                ):
+                for attr, old_val, new_val, is_replaced in zip(RECIPE_ATTRIBUTES, old_row, new_row, updated):
                     if is_replaced:
                         logger.info(
                             "%s: %s => %s",

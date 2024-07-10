@@ -32,7 +32,7 @@ from functools import cache
 from pathlib import Path
 from typing import Final, get_args
 
-from recipe2txt.file_setup import (
+from file_setup import (
     CONFIG_FILE,
     JINJA_TEMPLATE_DIR,
     PROGRAM_NAME,
@@ -44,28 +44,28 @@ from recipe2txt.file_setup import (
     get_log,
     get_template_files,
 )
-from recipe2txt.sql import Database
-from recipe2txt.utils.ArgConfig import ArgConfig
-from recipe2txt.utils.conditional_imports import tomllib
-from recipe2txt.utils.ContextLogger import (
+from sql import Database
+from utils.ArgConfig import ArgConfig
+from utils.conditional_imports import tomllib
+from utils.ContextLogger import (
     LOG_LEVEL_NAMES,
     STRING2LEVEL,
     get_logger,
     root_log_setup,
 )
-from recipe2txt.utils.filesystem import File, read_files
-from recipe2txt.utils.misc import URL, Counts, extract_urls
+from utils.filesystem import File, read_files
+from utils.misc import URL, Counts, extract_urls
 
 try:
-    from recipe2txt.fetcher_async import AsyncFetcher as Fetcher
+    from fetcher_async import AsyncFetcher as Fetcher
 except ImportError:
-    from recipe2txt.fetcher import (  # type: ignore[assignment] # isort: skip
+    from fetcher import (  # type: ignore[assignment] # isort: skip
         Fetcher as Fetcher,
     )
 
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 
@@ -74,15 +74,8 @@ class FileListingArgParse(argparse.ArgumentParser):
         help_msg = super().format_help()
         files = get_files()
         files.sort()
-        files_str = (
-            os.linesep + "   " + (os.linesep + "   ").join(files) if files else " none"
-        )
-        help_msg += (
-            os.linesep
-            + "files created or used by this program:"
-            + files_str
-            + os.linesep
-        )
+        files_str = os.linesep + "   " + (os.linesep + "   ").join(files) if files else " none"
+        help_msg += os.linesep + "files created or used by this program:" + files_str + os.linesep
         return help_msg
 
 
@@ -91,7 +84,7 @@ AIOHTTP_NOT_AVAILABLE_MSG: Final = (
         """
     Since the package 'aiohttp' is not installed the number of
     simultaneous connections will always be 1. Thus this flag and its
-    parameters will not be evaluated. 
+    parameters will not be evaluated.
     """
     )
     if not Fetcher.is_async
@@ -135,8 +128,7 @@ def config_args(config_file: Path) -> argparse.ArgumentParser:
     )
     arg_config.add_arg(
         "--output",
-        "Specifies an output file. THIS WILL OVERWRITE ANY EXISTING FILE WITH THE SAME"
-        " NAME.",
+        "Specifies an output file. THIS WILL OVERWRITE ANY EXISTING FILE WITH THE SAME" " NAME.",
         default=get_default_output(),
     )
     arg_config.add_choice(
@@ -149,9 +141,7 @@ def config_args(config_file: Path) -> argparse.ArgumentParser:
         "--connections",
         default=Fetcher.connections,
         short="-con",
-        help_str=(
-            f"{AIOHTTP_NOT_AVAILABLE_MSG}Sets the number of simultaneous connections"
-        ),
+        help_str=(f"{AIOHTTP_NOT_AVAILABLE_MSG}Sets the number of simultaneous connections"),
     )
     arg_config.add_choice(
         "--cache",
@@ -169,9 +159,7 @@ def config_args(config_file: Path) -> argparse.ArgumentParser:
             " none previously."
         ),
     )
-    arg_config.add_bool(
-        "--debug", "Activates debug-mode: Changes the directory for application data"
-    )
+    arg_config.add_bool("--debug", "Activates debug-mode: Changes the directory for application data")
     arg_config.add_type(
         "--timeout",
         default=Fetcher.timeout,
@@ -294,9 +282,7 @@ def init_database(debug: bool, out: File) -> Database:
     return Database(db_file, out)
 
 
-def strings2urls(
-    url_str: list[str], files: list[str], counts: Counts | None = None
-) -> set[URL]:
+def strings2urls(url_str: list[str], files: list[str], counts: Counts | None = None) -> set[URL]:
     """
     Converts the input-strings to urls
 

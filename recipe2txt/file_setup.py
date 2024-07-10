@@ -45,10 +45,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Final, NamedTuple
 
-from xdg_base_dirs import xdg_config_home, xdg_data_home, xdg_state_home
-
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.filesystem import (
+from utils.ContextLogger import get_logger
+from utils.filesystem import (
     AccessibleDatabase,
     Directory,
     File,
@@ -58,9 +56,10 @@ from recipe2txt.utils.filesystem import (
     ensure_accessible_file_critical,
     ensure_existence_dir,
 )
+from xdg_base_dirs import xdg_config_home, xdg_data_home, xdg_state_home
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 PROGRAM_NAME: Final = "recipes2txt"
@@ -87,17 +86,15 @@ DEFAULT_DIRS: Final = ProgramDirectories(
     xdg_state_home() / PROGRAM_NAME,
 )
 """
-Specifies the paths the program will use during normal operation for storage of data, 
-configuration-files and state. 
-        
+Specifies the paths the program will use during normal operation for storage of data,
+configuration-files and state.
+
 The specified paths try to adhere to the XDG Base Directory Specification.
 """
 
-DEBUG_DIRECTORY_BASE: Final = (
-    Path(__file__).parents[1] / "test" / "testfiles" / "debug-dirs"
-)
+DEBUG_DIRECTORY_BASE: Final = Path(__file__).parents[1] / "test" / "testfiles" / "debug-dirs"
 
-"""Specifies the root directory for all files used by this program when the 
+"""Specifies the root directory for all files used by this program when the
 '--debug'-flag is set."""
 
 DEBUG_DIRS: Final = ProgramDirectories(
@@ -108,7 +105,7 @@ DEBUG_DIRS: Final = ProgramDirectories(
 """
 Specifies the paths the program will use when the '--debug'-flag is set.
 
-The directories (data, config, state) mirror their :py:data:`default-dirs` 
+The directories (data, config, state) mirror their :py:data:`default-dirs`
 counterparts in function.
 """
 
@@ -148,15 +145,9 @@ def get_template_files(debug: bool = False) -> dict[str, File]:
 
     """
     if not debug and not JINJA_TEMPLATE_DIR.is_dir():
-        shutil.copytree(
-            JINJA_TEMPLATE_ORIGIN_DIR, JINJA_TEMPLATE_DIR, dirs_exist_ok=True
-        )
+        shutil.copytree(JINJA_TEMPLATE_ORIGIN_DIR, JINJA_TEMPLATE_DIR, dirs_exist_ok=True)
     template_dir = JINJA_TEMPLATE_ORIGIN_DIR if debug else JINJA_TEMPLATE_DIR
-    d = {
-        validated.stem: validated
-        for f in template_dir.glob("*.jinja")
-        if (validated := ensure_accessible_file(f))
-    }
+    d = {validated.stem: validated for f in template_dir.glob("*.jinja") if (validated := ensure_accessible_file(f))}
     return d
 
 
@@ -252,26 +243,26 @@ def erase_files(debug: bool = False) -> None:
 
 HOW_TO_REPORT_TXT: Final = textwrap.dedent(
     """
-    During its execution the program encountered errors while trying to scrape 
-    recipes. In cases where the error seems to originate from the underlying library 
+    During its execution the program encountered errors while trying to scrape
+    recipes. In cases where the error seems to originate from the underlying library
     'recipe-scrapers' an error-report per error has been generated and saved to a file.
-    You find those files in the folders adjacent to this file. There is one folder 
+    You find those files in the folders adjacent to this file. There is one folder
     per error-encountering execution of the program (named with the timestamp of the
     moment the execution finished: 'Year-Month-Day_Hour-Minute-Second').
-    If you want those errors fixed, go to 
+    If you want those errors fixed, go to
     'https://github.com/hhursev/recipe-scrapers/issues' and search for each filename
-    (without the '.md'-extension). If you cannot find a matching report for a filename, 
+    (without the '.md'-extension). If you cannot find a matching report for a filename,
     please click 'New Issue' and select 'Scraper Bug Report'. Paste the filename
     (without the '.md'-extension) into the 'Title'-Field and the contents of the file
-    into the 'Write'-field. Check the 'Pre-filling  checks'-boxes ONLY if you made 
-    sure to follow their instructions. After that click 'Submit new issue'. 
+    into the 'Write'-field. Check the 'Pre-filling  checks'-boxes ONLY if you made
+    sure to follow their instructions. After that click 'Submit new issue'.
     The maintainers of the library will have a look at your problem and try to fix
-    it. 
+    it.
     Please note that they are volunteers and under no obligation to help you. Be kind
     to them.
     """
 )
-"""Text describing how to report errors originating from the 
+"""Text describing how to report errors originating from the
 :py:mod:`recipe-scrapers`-library."""
 
 
@@ -290,10 +281,7 @@ def get_parsing_error_dir(debug: bool = False) -> Directory | None:
 
     current_error_dir = create_timestamped_dir(error_dir)
     if not current_error_dir:
-        logger.error(
-            "Could not create directory for error reporting, no reports will be"
-            " written."
-        )
+        logger.error("Could not create directory for error reporting, no reports will be" " written.")
         return None
 
     return current_error_dir

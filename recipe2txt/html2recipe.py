@@ -47,20 +47,19 @@ from typing import Any, Final, NamedTuple, NewType
 
 import recipe_scrapers
 from importlib_metadata import version
+from parsing_error import handle_parsing_error
 from recipe_scrapers._exceptions import (
     ElementNotFoundInHtml,
     NoSchemaFoundInWildMode,
     SchemaOrgException,
     WebsiteNotImplementedError,
 )
-
-from recipe2txt.parsing_error import handle_parsing_error
-from recipe2txt.utils.conditional_imports import LiteralString
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.misc import NEVER_CATCH, URL, Counts, dict2str, is_url
+from utils.conditional_imports import LiteralString
+from utils.ContextLogger import get_logger
+from utils.misc import NEVER_CATCH, URL, Counts, dict2str, is_url
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 Parsed = NewType("Parsed", recipe_scrapers._abstract.AbstractScraper)
@@ -157,12 +156,7 @@ def none2na(t: tuple[Any, ...]) -> tuple[Any, ...]:
         )
     if None in t:
         tmp = list(t)
-        t = tuple(
-            [
-                tmp[i] if tmp[i] else getattr(UNINIT_RECIPE, RECIPE_ATTRIBUTES[i])
-                for i in range(len(tmp))
-            ]
-        )
+        t = tuple([tmp[i] if tmp[i] else getattr(UNINIT_RECIPE, RECIPE_ATTRIBUTES[i]) for i in range(len(tmp))])
     return t
 
 
@@ -174,12 +168,12 @@ ON_DISPLAY: Final[list[LiteralString]] = ESSENTIAL + [
     "total_time",
     "yields",
 ]
-"""names of attributes that are used for creating the textual representation of the 
+"""names of attributes that are used for creating the textual representation of the
 recipe"""
 
 METHODS: Final[list[LiteralString]] = ON_DISPLAY + ["host", "image", "nutrients"]
-"""names of attributes that contain information gathered by calling the methods with 
-the same name on the 
+"""names of attributes that contain information gathered by calling the methods with
+the same name on the
 :py:class:`recipe_scrapers._abstract.AbstractScraper`"""
 
 RECIPE_ATTRIBUTES: Final[list[LiteralString]] = METHODS + [
@@ -216,10 +210,7 @@ def int2status(t: tuple[Any, ...]) -> tuple[Any, ...]:
     if len(t) != len(RECIPE_ATTRIBUTES):
         raise ValueError(f"Wanted length of {len(RECIPE_ATTRIBUTES)}, got {len(t)}")
     if RECIPE_ATTRIBUTES[-2] != "status":
-        raise AttributeError(
-            f"'status' is not at position {len(RECIPE_ATTRIBUTES) -1 -2}"
-            " in RECIPE_ATTRIBUTES"
-        )
+        raise AttributeError(f"'status' is not at position {len(RECIPE_ATTRIBUTES) -1 -2}" " in RECIPE_ATTRIBUTES")
     try:
         status = RecipeStatus(int(t[-2]))
     except ValueError:
@@ -283,9 +274,7 @@ def info2str(method: str, info: Any) -> str:
             unexpected_type = False
         if method == "ingredients":
             if isinstance(info, list):
-                if (
-                    len(info[0]) < 2
-                ):  # Every item in the list is probably just one character
+                if len(info[0]) < 2:  # Every item in the list is probably just one character
                     for i, c in enumerate(info):
                         if not c:
                             info[i] = " "

@@ -24,12 +24,10 @@ from os import linesep
 from types import TracebackType
 from typing import Any, Callable, Final, Generator, Literal, TypeAlias, get_args
 
-from recipe2txt.utils.conditional_imports import LiteralString
-from recipe2txt.utils.traceback_utils import shorten_paths
+from utils.conditional_imports import LiteralString
+from utils.traceback_utils import shorten_paths
 
-LOG_LEVEL_NAMES: Final[TypeAlias] = Literal[
-    "debug", "info", "warning", "error", "critical"
-]
+LOG_LEVEL_NAMES: Final[TypeAlias] = Literal["debug", "info", "warning", "error", "critical"]
 LOG_LEVEL_VALUES: Final[list[int]] = [
     logging.DEBUG,
     logging.INFO,
@@ -38,16 +36,12 @@ LOG_LEVEL_VALUES: Final[list[int]] = [
     logging.CRITICAL,
 ]
 
-STRING2LEVEL: Final[dict[LiteralString, int]] = dict(
-    zip(get_args(LOG_LEVEL_NAMES), LOG_LEVEL_VALUES)
-)
+STRING2LEVEL: Final[dict[LiteralString, int]] = dict(zip(get_args(LOG_LEVEL_NAMES), LOG_LEVEL_VALUES))
 
 LOGFILE: Final = "file.log"
 
 _LOG_FORMAT_STREAM: Final = "%(ctx)s%(message)s"
-_LOG_FORMAT_FILE: Final = str(
-    "%(asctime)s - %(levelname)s %(module)s:%(funcName)s:%(lineno)d %(message)s"
-)
+_LOG_FORMAT_FILE: Final = str("%(asctime)s - %(levelname)s %(module)s:%(funcName)s:%(lineno)d %(message)s")
 
 DATEFMT: Final = "%Y-%m-%d %H:%m:%S"
 
@@ -142,16 +136,12 @@ class Context:
 
 
 class QueueContextFilter(logging.Filter):
-    def __init__(
-        self, log_level: int = logging.NOTSET, handler: logging.Handler | None = None
-    ) -> None:
+    def __init__(self, log_level: int = logging.NOTSET, handler: logging.Handler | None = None) -> None:
         super().__init__()
         self.log_level = log_level
         # TODO: Add reset
         self.handler = handler if handler else logging.NullHandler()
-        self.tasklocal_context: dict[str, Context] = {
-            DEFAULT_CONTEXT: Context(self.handler)
-        }
+        self.tasklocal_context: dict[str, Context] = {DEFAULT_CONTEXT: Context(self.handler)}
 
     def set_handler(self, handler: logging.Handler | None = None) -> None:
         self.handler = handler if handler else logging.NullHandler()
@@ -198,12 +188,7 @@ def format_exception(
         tb_ex.stack = shorten_paths(tb_ex.stack, first_visible_dir="Rezepte")
         tb = tb_ex.format()
         indent = "\t\t" if indent_for_context else "\t"
-        tb_lines = [
-            indent + line + os.linesep
-            for frame in tb
-            for line in frame.split(os.linesep)
-            if line
-        ]
+        tb_lines = [indent + line + os.linesep for frame in tb for line in frame.split(os.linesep) if line]
         formatted = linesep + "".join(tb_lines)
     else:
         formatted = f"{ex_class.__name__} - {exception}"
@@ -275,15 +260,12 @@ class QueueContextManager:
         extra = {CTX_ATTR: True, DEFER_EMIT: self.defer_emit}
         self.logging_fun(self.msg, *self.args, stacklevel=2, extra=extra, **self.kwargs)
 
-    def __exit__(
-        self, exc_type: type, exc_value: BaseException, trace: TracebackType
-    ) -> Literal[False]:
+    def __exit__(self, exc_type: type, exc_value: BaseException, trace: TracebackType) -> Literal[False]:
         if not (exc_type or exc_value):
             self.logger.debug(DO_NOT_LOG, extra=END_CONTEXT)
         else:
             self.logger.error(
-                f"Leaving context '{self.msg % self.args}' because of exception"
-                f" {exc_type}: {exc_value}",
+                f"Leaving context '{self.msg % self.args}' because of exception" f" {exc_type}: {exc_value}",
                 extra=END_CONTEXT,
             )
         return False
@@ -314,12 +296,8 @@ class EndContextFilter(logging.Filter):
         return True
 
 
-def get_file_handler(
-    file: str = LOGFILE, level: int = logging.DEBUG
-) -> logging.FileHandler:
-    file_handler = RotatingFileHandler(
-        file, mode="w", maxBytes=10000000, backupCount=4, encoding="utf-8"
-    )
+def get_file_handler(file: str = LOGFILE, level: int = logging.DEBUG) -> logging.FileHandler:
+    file_handler = RotatingFileHandler(file, mode="w", maxBytes=10000000, backupCount=4, encoding="utf-8")
     file_handler.setLevel(level)
     f = EndContextFilter()
     file_handler.addFilter(f)
@@ -347,9 +325,7 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 
 
-def root_log_setup(
-    level: int, file: str | None = None, no_parallel: bool = True
-) -> None:
+def root_log_setup(level: int, file: str | None = None, no_parallel: bool = True) -> None:
     logger = logging.getLogger()
 
     logger.setLevel(logging.DEBUG)

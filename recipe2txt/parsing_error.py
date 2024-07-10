@@ -26,14 +26,14 @@ from importlib.metadata import version
 from os import linesep
 from typing import Callable, Final, NamedTuple
 
-from recipe2txt.file_setup import HOW_TO_REPORT_NAME, get_parsing_error_dir
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.markdown import bold, code, codeblock, italic, unordered
-from recipe2txt.utils.misc import URL
-from recipe2txt.utils.traceback_utils import format_stacks, get_shared_frames
+from file_setup import HOW_TO_REPORT_NAME, get_parsing_error_dir
+from utils.ContextLogger import get_logger
+from utils.markdown import bold, code, codeblock, italic, unordered
+from utils.misc import URL
+from utils.traceback_utils import format_stacks, get_shared_frames
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 SCRAPER_VERSION: Final = version("recipe_scrapers")
@@ -80,9 +80,7 @@ def handle_parsing_error(
     if not save_error:
         return None
 
-    parsing_error = ParsingError(
-        url=url, traceback=traceback.TracebackException.from_exception(exception)
-    )
+    parsing_error = ParsingError(url=url, traceback=traceback.TracebackException.from_exception(exception))
     method = method if method else "general parsing error"
     host = urllib.parse.urlparse(url).hostname
     if not host:
@@ -132,17 +130,10 @@ def errors2str() -> list[tuple[str, str]]:
                 msg = PRE_CHECK_MSG
 
                 host = host[4:] if host.startswith("www.") else host
-                title = (
-                    f"{host.split('.')[0]}: {method} - {exception_name} (found by"
-                    " recipe2txt)"
-                )
+                title = f"{host.split('.')[0]}: {method} - {exception_name} (found by" " recipe2txt)"
 
                 urls = [parsing_error.url for parsing_error in parsing_error_list]
-                triggered_by = (
-                    "scrape_html()"
-                    if method == "general parsing error"
-                    else f".{method}()"
-                )
+                triggered_by = "scrape_html()" if method == "general parsing error" else f".{method}()"
                 infos = unordered(
                     "host: " + code(host),
                     "recipe-scrapers version: " + code(SCRAPER_VERSION),
@@ -153,16 +144,11 @@ def errors2str() -> list[tuple[str, str]]:
 
                 tb_ex_list = [error.traceback for error in parsing_error_list]
                 shared_frames = get_shared_frames(tb_ex_list)
-                formatted_stacks = format_stacks(
-                    tb_ex_list, shared_frames, "recipe2txt"
-                )
+                formatted_stacks = format_stacks(tb_ex_list, shared_frames, "recipe2txt")
 
                 if len(urls) > 1:
                     dot_explanation = (
-                        italic(
-                            "'...' indicates frames present in all traces"
-                            "(but only shown in the first)"
-                        )
+                        italic("'...' indicates frames present in all traces" "(but only shown in the first)")
                         + linesep * 2
                     )
                 else:
@@ -185,22 +171,22 @@ categorized_errors: dict[str, dict[str, dict[str, list[ParsingError]]]] = dict()
 """
 A dictionary for categorizing :py:class:`ParsingErrors` based on metadata.
 
-The variable contains three levels of dictionary-nesting. The outer dictionary maps 
-the hosts of URLs to further dictionaries. 
-Those further dictionaries map a method-name (see :py:data:`METHODS`) to more 
+The variable contains three levels of dictionary-nesting. The outer dictionary maps
+the hosts of URLs to further dictionaries.
+Those further dictionaries map a method-name (see :py:data:`METHODS`) to more
 dictionaries. Those dictionaries map
-the name of the exception from :py:attr:`ParsingError.traceback` to lists containing 
+the name of the exception from :py:attr:`ParsingError.traceback` to lists containing
 parsing errors.
 Overview:
     outer dictionary (host of url -> middle dictionaries)
     middle dictionary (method where the traceback occurred -> inner dictionaries)
-    inner dictionary(name of the exception that caused the traceback -> list of 
+    inner dictionary(name of the exception that caused the traceback -> list of
     parsing errors)
 
 
-The categorized errors will be used to generate markdown-formatted files, that can be 
+The categorized errors will be used to generate markdown-formatted files, that can be
 submitted as Github-Issues.
-This nested-dictionary-abomination is used to group similar errors together, so that 
+This nested-dictionary-abomination is used to group similar errors together, so that
 the can all be reported in one
 issue.
 """
@@ -208,14 +194,14 @@ issue.
 PRE_CHECK_MSG: Final = textwrap.dedent(
     """
     --- MESSAGE GENERATED BY recipe2txt ---
-    
+
     **Pre-filing checks**
-    
+
     - [ ] I have searched for open issues that report the same problem
     - [ ] I have checked that the bug affects the latest version of the library
-    
+
     **Information**
-    
+
     """
 )
 """String that will be prepended to every error report"""

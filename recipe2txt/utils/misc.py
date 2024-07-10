@@ -20,8 +20,7 @@ from types import ModuleType
 from typing import Any, Final, NewType, TypeGuard
 
 import validators
-
-from recipe2txt.utils.ContextLogger import get_logger
+from utils.ContextLogger import get_logger
 
 __all__ = [
     "NEVER_CATCH",
@@ -61,9 +60,7 @@ def extract_urls(lines: list[str]) -> set[URL]:
 
                 # Strip variables to avoid duplicating urls
                 parsed = urllib.parse.urlparse(url)
-                reconstructed = urllib.parse.urlunparse(
-                    (parsed.scheme, parsed.netloc, parsed.path, "", "", "")
-                )
+                reconstructed = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
                 url = reconstructed if is_url(reconstructed) else url
 
                 if url in processed:

@@ -33,8 +33,8 @@ from enum import unique
 from pathlib import Path
 from typing import Any, Final, Generic, Iterable, Literal, TypeVar
 
-from recipe2txt.utils.conditional_imports import StrEnum, tomllib
-from recipe2txt.utils.filesystem import File, ensure_accessible_file_critical
+from utils.conditional_imports import StrEnum, tomllib
+from utils.filesystem import File, ensure_accessible_file_critical
 
 
 def short_flag(long_name: str) -> str:
@@ -55,9 +55,7 @@ def short_flag(long_name: str) -> str:
 
     """
     if not long_name.startswith("--"):
-        raise ValueError(
-            f"There cannot be a short version of a positional argument ('{long_name}')"
-        )
+        raise ValueError(f"There cannot be a short version of a positional argument ('{long_name}')")
     segments = long_name[2:].split("-")
     starting_letters = [segment.strip()[0] for segment in segments if segment]
     return "-" + "".join(starting_letters)
@@ -137,10 +135,7 @@ class BasicOption:
         option_name = option_name.strip()
         is_optional = option_name.startswith("--")
         if option_name.startswith("-") and not is_optional:
-            raise ValueError(
-                "'option_name' should be the long version of the optional argument. Use"
-                " '--'."
-            )
+            raise ValueError("'option_name' should be the long version of the optional argument. Use" " '--'.")
         self.name = option_name[2:] if is_optional else option_name
         self.option_names = [option_name]
 
@@ -148,14 +143,9 @@ class BasicOption:
             short = short.strip()
             if short:
                 if not is_optional:
-                    raise ValueError(
-                        f"Positional arguments ('{option_name}') cannot have a short"
-                        " version!"
-                    )
+                    raise ValueError(f"Positional arguments ('{option_name}') cannot have a short" " version!")
                 if not short.startswith("-"):
-                    raise ValueError(
-                        f"Missing '-' at the beginning of the 'short'-argument {short}"
-                    )
+                    raise ValueError(f"Missing '-' at the beginning of the 'short'-argument {short}")
                 if len(short) >= len(option_name):
                     raise ValueError(f"{short=} is not shorter than {option_name=}")
                 self.option_names.append(short)
@@ -168,8 +158,7 @@ class BasicOption:
         help_tmp = self.arguments[ArgKey.HELP]
         if self.arguments[ArgKey.DEFAULT] is not None:
             self.arguments[ArgKey.HELP] = (
-                f"{self.arguments[ArgKey.HELP]} (default:"
-                f" '{self.arguments[ArgKey.DEFAULT]}')"
+                f"{self.arguments[ArgKey.HELP]} (default:" f" '{self.arguments[ArgKey.DEFAULT]}')"
             )
         parser.add_argument(*self.option_names, **self.arguments)  # type: ignore[misc]
         self.arguments[ArgKey.HELP] = help_tmp
@@ -182,10 +171,7 @@ class BasicOption:
     def to_toml_str_intern(self, value_comment: str) -> str:
         default_str = obj2toml(self.arguments[ArgKey.DEFAULT])
         help_str = BasicOption.help_wrapper.fill(self.arguments[ArgKey.HELP])
-        return (
-            f"\n\n\n{help_str + os.linesep * 2 if help_str else ''}#{self.name} ="
-            f" {default_str}{value_comment}\n"
-        )
+        return f"\n\n\n{help_str + os.linesep * 2 if help_str else ''}#{self.name} =" f" {default_str}{value_comment}\n"
 
     def to_toml(self, file: File | None = None) -> None:
         """Appends this Option and its default-value to a TOML-file"""
@@ -246,9 +232,7 @@ class ChoiceOption(BasicOption, Generic[T]):
         self.arguments[ArgKey.CHOICES] = choices
 
     def to_toml_str(self) -> str:
-        choice_str = " | ".join(
-            [obj2toml(choice) for choice in self.arguments[ArgKey.CHOICES]]
-        )
+        choice_str = " | ".join([obj2toml(choice) for choice in self.arguments[ArgKey.CHOICES]])
         return super().to_toml_str_intern(f" # Possible values: {choice_str}\n")
 
     def toml_valid(self, value: Any) -> bool:
@@ -278,9 +262,7 @@ class TypeOption(BasicOption):
     ):
         if t is None:
             if default is None:
-                raise ValueError(
-                    "t could not be inferred (since 't' and 'default' are None"
-                )
+                raise ValueError("t could not be inferred (since 't' and 'default' are None")
             t = type(default)
         elif not isinstance(default, t):
             raise ValueError(f"Parameter {default=} does not match type {t=}")
@@ -289,9 +271,7 @@ class TypeOption(BasicOption):
 
     def toml_valid(self, value: Any) -> bool:
         if not (t := self.arguments.get(ArgKey.TYPE)):
-            raise RuntimeError(
-                "'argument_args' does not contain 'type' (but it should)"
-            )
+            raise RuntimeError("'argument_args' does not contain 'type' (but it should)")
         return isinstance(value, t)
 
 
@@ -368,8 +348,8 @@ CFG_PREAMBLE: Final = textwrap.dedent(
     #
     # For information about this file-format, please visit: https://toml.io
     #*****************************************************************************
-    
-    
+
+
     """
 )
 """
@@ -377,7 +357,7 @@ Help text explaining how the config-file works.
 
 Should be written to the beginning of every config file.
 
-Takes three %-formatting-args: first and third are pretty-print-borders, the second 
+Takes three %-formatting-args: first and third are pretty-print-borders, the second
 is the name of the program the
 config-file belongs to.
 """
@@ -443,9 +423,7 @@ class ArgConfig:
             self.error_exit()
             raise
 
-    def add_arg(
-        self, name: str, help_str: str, default: Any = None, short: str | None = ""
-    ) -> None:
+    def add_arg(self, name: str, help_str: str, default: Any = None, short: str | None = "") -> None:
         """
         Register a standard argument consisting of a string name, expecting a string
         value.
@@ -512,9 +490,7 @@ class ArgConfig:
         """
         self._add_option(TypeOption, (name, help_str, default, t, short))
 
-    def add_bool(
-        self, name: str, help_str: str, default: bool = False, short: str | None = ""
-    ) -> None:
+    def add_bool(self, name: str, help_str: str, default: bool = False, short: str | None = "") -> None:
         """
         Register a boolean argument
 

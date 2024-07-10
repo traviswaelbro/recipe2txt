@@ -24,15 +24,15 @@ Attributes:
 import urllib.error
 import urllib.request
 
-import recipe2txt.html2recipe as h2r
-from recipe2txt.sql import Database
-from recipe2txt.utils.conditional_imports import StrEnum
-from recipe2txt.utils.ContextLogger import QueueContextManager as QCM
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.misc import NEVER_CATCH, URL, Counts
+import html2recipe as h2r
+from sql import Database
+from utils.conditional_imports import StrEnum
+from utils.ContextLogger import QueueContextManager as QCM
+from utils.ContextLogger import get_logger
+from utils.misc import NEVER_CATCH, URL, Counts
 
 logger = get_logger(__name__)
-"""The logger for the module. Receives the constructed logger from 
+"""The logger for the module. Receives the constructed logger from
 :py:mod:`recipe2txt.utils.ContextLogger`"""
 
 
@@ -59,10 +59,7 @@ class Fetcher:
     is_async: bool = False
     connections: int = 1
     timeout: float = 10.0
-    user_agent: str = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101"
-        " Firefox/115.0"
-    )
+    user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101" " Firefox/115.0"
 
     def __init__(
         self,

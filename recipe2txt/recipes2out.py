@@ -19,14 +19,13 @@ Module for functions using the jinja2-package to format recipes and write them t
 """
 from functools import cache
 
+from file_setup import JINJA_TEMPLATE_DIR, get_template_files
+from html2recipe import NA, Recipe
 from jinja2 import Environment, StrictUndefined
-
-from recipe2txt.file_setup import JINJA_TEMPLATE_DIR, get_template_files
-from recipe2txt.html2recipe import NA, Recipe
-from recipe2txt.utils import markdown
-from recipe2txt.utils.ContextLogger import get_logger
-from recipe2txt.utils.filesystem import File, ensure_accessible_file
-from recipe2txt.utils.misc import get_all_dict
+from utils import markdown
+from utils.ContextLogger import get_logger
+from utils.filesystem import File, ensure_accessible_file
+from utils.misc import get_all_dict
 
 logger = get_logger(__name__)
 
@@ -71,9 +70,7 @@ class RecipeWriter:
         """
         self.out = out
         if not (template_files := get_template_files(debug)):
-            raise FileNotFoundError(
-                f"No templates found. Empty directory: {JINJA_TEMPLATE_DIR}"
-            )
+            raise FileNotFoundError(f"No templates found. Empty directory: {JINJA_TEMPLATE_DIR}")
         if not (template_path := template_files.get(template_name)):
             raise ValueError(f"Template not found: {template_name}")
         if not (template_file := ensure_accessible_file(template_path)):
@@ -93,9 +90,7 @@ class RecipeWriter:
         else:
             self.out.with_suffix("." + template_name)
         if self.out.stat().st_size > 0:
-            logger.warning(
-                "The output-file already exists and will be overwritten: %s", out
-            )
+            logger.warning("The output-file already exists and will be overwritten: %s", out)
 
         logger.info("Output set to: %s", self.out)
 

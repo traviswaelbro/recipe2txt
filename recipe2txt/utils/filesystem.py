@@ -23,7 +23,7 @@ from pathlib import Path
 from time import localtime, strftime
 from typing import Any, NewType, TypeGuard
 
-from recipe2txt.utils.ContextLogger import DO_NOT_LOG, get_logger
+from utils.ContextLogger import DO_NOT_LOG, get_logger
 
 logger = get_logger(__name__)
 
@@ -55,7 +55,7 @@ def real_dir(value: Path) -> TypeGuard[Directory]:
 AccessibleDatabase = NewType("AccessibleDatabase", Path)
 """
 Type representing a path to a sqlite3-database-file. The type states that the file has existed and represented a valid
-and accessible sqlite3-database-file at the point in time the Path-type was narrowed to the database-type, but does not 
+and accessible sqlite3-database-file at the point in time the Path-type was narrowed to the database-type, but does not
 represent a guarantee that the file will hold those properties at a later point in time.
 """
 
@@ -108,10 +108,7 @@ def _ensure_existence_dir(
     try:
         if path.is_file():
             return None, (
-                (
-                    "%s is already a file, thus a directory with the same name cannot"
-                    " exist"
-                ),
+                ("%s is already a file, thus a directory with the same name cannot" " exist"),
                 path,
             )
         exists = real_dir(path)
@@ -213,10 +210,7 @@ def _ensure_accessible_file(
     try:
         if path.is_dir():
             return None, (
-                (
-                    "%s is already a directory, thus a file with the same name cannot"
-                    " exist"
-                ),
+                ("%s is already a directory, thus a file with the same name cannot" " exist"),
                 path,
             )
         exists = path.is_file()
@@ -298,7 +292,7 @@ def ensure_accessible_db_critical(*path_elem: str | Path) -> AccessibleDatabase:
     Tries to find (or create if not existing) a valid database file from the path
     elements provided.
 
-    Works like :py:function:`recipe2txt.utils.misc.ensure_accessible_file_critical`.
+    Works like :py:function:`utils.misc.ensure_accessible_file_critical`.
     Args:
         *path_elem: The elements from which a path should be constructed
     Returns:
