@@ -31,6 +31,7 @@ import textwrap
 from functools import cache
 from pathlib import Path
 from typing import Final, get_args
+from urllib.parse import urlparse
 
 from file_setup import (
     CONFIG_FILE,
@@ -214,6 +215,10 @@ def mutex_args(a: argparse.Namespace) -> None:
     Args:
         a: The result of a call to :py:method:`argparse.ArgumentParser.parse_args()`
     """
+    ##### BEGIN CUSTOM CODE
+    recipe_url = [el for el in urlparse(a.url[0]).path.split("/") if el.strip()][0]
+    a.output += f"{recipe_url}.{a.output_format}"
+    ##### END CUSTOM CODE
     if a.erase_appdata:
         if len(sys.argv) > 2:
             get_parser().error("--erase-appdata cannot be used with any other flags")
