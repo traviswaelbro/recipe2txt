@@ -216,8 +216,8 @@ def mutex_args(a: argparse.Namespace) -> None:
         a: The result of a call to :py:method:`argparse.ArgumentParser.parse_args()`
     """
     ##### BEGIN CUSTOM CODE
-    recipe_url = [el for el in urlparse(a.url[0]).path.split("/") if el.strip()][0]
-    a.output += f"{recipe_url}.{a.output_format}"
+    recipe_url = [el for el in urlparse(a.url[0]).path.split("/") if el.strip()][-1]
+    a.output += f"/{recipe_url}.{a.output_format}"
     ##### END CUSTOM CODE
     if a.erase_appdata:
         if len(sys.argv) > 2:
